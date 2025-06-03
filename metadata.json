@@ -1,0 +1,5 @@
+{
+  "name": "Hệ thống Học Tiếng Nhật Nâng cao",
+  "description": "Một ứng dụng React và Tailwind CSS để học bảng chữ cái tiếng Nhật (Hiragana, Katakana, Kanji) với các bài kiểm tra và theo dõi tiến độ. Dựa trên phương pháp học hiệu quả với hệ thống thông minh giúp ghi nhớ lâu dài.",
+  "requestFramePermissions": []
+}
