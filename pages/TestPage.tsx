@@ -115,19 +115,11 @@ const TestPage: React.FC = () => {
   const startReviewIncorrectVocabQuiz = () => {
     const vocabToReview = incorrectQuizItems.filter(item => 'translation_vi' in item) as VocabularyWord[];
     if (vocabToReview.length > 0) {
-      // For now, just alert. TODO: Implement vocab review quiz screen.
-      // alert(`Sẵn sàng ôn tập ${vocabToReview.length} từ vựng. (Chức năng đang phát triển)`);
-      // To actually start a vocab quiz for review:
       setQuizContext('vocabulary');
-      setCurrentVocabWord(vocabToReview[0]); // Start with the first incorrect vocab
-      // Need to set up options, question type etc. for the review session
-      // This part needs more logic similar to loadVocabularyQuestion but for a specific list.
-      // For simplicity in this update, let's re-use the normal vocab quiz flow but with incorrect items.
-      // This would ideally shuffle vocabToReview and go through them.
+      setCurrentVocabWord(vocabToReview[0]); 
       setCurrentScreen('vocabularyQuiz'); 
-      setIsReviewingItems(true); // Indicate review mode
-      // Simplified: just load the first incorrect word
-      loadVocabularyQuestion(vocabToReview); // Pass the list to draw from
+      setIsReviewingItems(true); 
+      loadVocabularyQuestion(vocabToReview); 
     } else {
       alert("Không có lỗi sai Từ vựng nào để ôn tập.");
     }
@@ -140,16 +132,32 @@ const TestPage: React.FC = () => {
 
   const toggleKanaSet = (script: 'hiragana' | 'katakana', setType: keyof KanaSetSelection | 'extended') => {
     setQuizSettings(prev => {
-      const newSettings = { ...prev };
       if (script === 'hiragana') {
-        if (setType !== 'extended') { 
-            newSettings.hiraganaSets[setType as keyof KanaSetSelection] = !newSettings.hiraganaSets[setType as keyof KanaSetSelection];
+        // Ensure setType is a valid key for hiraganaSets (main, dakuten, yoon)
+        const validHiraganaSetType = setType as keyof KanaSetSelection;
+        // Defensive check, though ButtonSetToggle should prevent 'extended' for hiragana
+        if (setType === 'extended') {
+            console.warn("Tried to toggle 'extended' set for Hiragana.");
+            return prev; 
         }
-      } else { 
-        const katakanaSetType = setType as keyof (KanaSetSelection & { extended: boolean });
-        newSettings.katakanaSets[katakanaSetType] = !newSettings.katakanaSets[katakanaSetType];
+        return {
+          ...prev, // Spread previous settings
+          hiraganaSets: { // Create a new hiraganaSets object
+            ...prev.hiraganaSets, // Spread previous hiragana sets
+            [validHiraganaSetType]: !prev.hiraganaSets[validHiraganaSetType], // Toggle the specific set
+          },
+        };
+      } else { // script === 'katakana'
+        // setType can be 'main', 'dakuten', 'yoon', or 'extended' for katakana
+        const katakanaSetTypeKey = setType as keyof (KanaSetSelection & { extended: boolean });
+        return {
+          ...prev, // Spread previous settings
+          katakanaSets: { // Create a new katakanaSets object
+            ...prev.katakanaSets, // Spread previous katakana sets
+            [katakanaSetTypeKey]: !prev.katakanaSets[katakanaSetTypeKey], // Toggle the specific set
+          },
+        };
       }
-      return newSettings;
     });
   };
   
@@ -376,14 +384,9 @@ const TestPage: React.FC = () => {
       if(isReviewingItems){ // If correct in review mode, remove from incorrect list
         setIncorrectQuizItems(prevIncorrectItems => 
           prevIncorrectItems.filter(item => {
-            // If item is a VocabularyWord, check its id against the currentVocabWord's id.
-            // If it's not the currentVocabWord (which was answered correctly), keep it.
-            // If it IS the currentVocabWord, filter it out (return false).
-            if ('translation_vi' in item) { // item is VocabularyWord
+            if ('translation_vi' in item) { 
               return item.id !== currentVocabWord.id;
             }
-            // If item is a JapaneseCharacter, always keep it in this context,
-            // as this logic is for removing a correctly answered *vocabulary* item.
             return true; 
           })
         );
@@ -400,10 +403,17 @@ const TestPage: React.FC = () => {
      if (isReviewingItems) {
         const vocabToReview = incorrectQuizItems.filter(item => 'translation_vi' in item) as VocabularyWord[];
         const currentIndex = currentVocabWord ? vocabToReview.findIndex(v => v.id === currentVocabWord.id) : -1;
-        if (currentIndex !== -1 && currentIndex < vocabToReview.length -1) {
-            loadVocabularyQuestion(vocabToReview.slice(currentIndex + 1)); // Pass remaining incorrect items
-        } else {
-             alert("Đã ôn tập hết từ vựng sai!");
+        if (currentIndex !== -1 && vocabToReview.length > 0) { // check vocabToReview not empty
+            const nextItemsToReview = vocabToReview.filter(v => v.id !== currentVocabWord?.id); // Remove current (now correctly answered) word
+            if (nextItemsToReview.length > 0) {
+                 loadVocabularyQuestion(nextItemsToReview); 
+            } else {
+                alert("Đã ôn tập hết từ vựng sai!");
+                setIsReviewingItems(false);
+                setCurrentScreen('setup');
+            }
+        } else { // No current word or current word not in review list (should not happen if logic is correct) or list empty
+             alert("Đã ôn tập hết từ vựng sai hoặc có lỗi!");
              setIsReviewingItems(false);
              setCurrentScreen('setup');
         }
@@ -418,8 +428,8 @@ const TestPage: React.FC = () => {
     setTotalAttempts(0);
     setCorrectAttempts(0);
     setCurrentStreak(0);
-    setIsReviewingItems(false);
-    // Reset specific quiz states if necessary
+    // setIsReviewingItems(false); // Should not reset review status here, only on finishing a review or explicitly
+    
     if (quizType !== 'comprehensive') {
         setQuizResultText('');
     }
@@ -433,12 +443,12 @@ const TestPage: React.FC = () => {
     if (currentScreen === 'comprehensiveQuiz') {
       setQuizContext('comprehensive');
       loadComprehensiveQuestion();
-    } else if (currentScreen === 'vocabularyQuiz' && !isReviewingItems) { // Don't auto-load if starting review
+    } else if (currentScreen === 'vocabularyQuiz' && !isReviewingItems) { 
       setQuizContext('vocabulary');
       loadVocabularyQuestion();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentScreen]); // loadComprehensiveQuestion, loadVocabularyQuestion are stable due to useCallback
+  }, [currentScreen, isReviewingItems]); // Added isReviewingItems to deps
 
   const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
 
@@ -482,7 +492,7 @@ const TestPage: React.FC = () => {
           <i className="fas fa-spell-check mr-2 text-green-500"></i>Kiểm Tra Từ Vựng
         </h2>
         <p className="text-sm text-slate-500 mb-4">Ghép từ tiếng Nhật (Kana) với nghĩa tiếng Việt và ngược lại.</p>
-        <Button onClick={() => setCurrentScreen('vocabularyQuiz')} variant="primary" className="w-full text-base sm:text-lg py-3" icon="fas fa-book-reader">Bắt Đầu Kiểm Tra Từ Vựng</Button>
+        <Button onClick={() => { setIsReviewingItems(false); setCurrentScreen('vocabularyQuiz');}} variant="primary" className="w-full text-base sm:text-lg py-3" icon="fas fa-book-reader">Bắt Đầu Kiểm Tra Từ Vựng</Button>
       </div>
 
       <hr className="my-8 border-slate-300"/>
@@ -518,7 +528,7 @@ const TestPage: React.FC = () => {
             <i className="fas fa-random mr-2 text-teal-500"></i>Kiểm Tra Toàn Diện (Kana)
         </h2>
         <p className="text-sm text-slate-500 mb-4">Trắc nghiệm ngẫu nhiên hoặc nhập Romaji cho các ký tự Hiragana & Katakana.</p>
-        <Button onClick={() => setCurrentScreen('comprehensiveQuiz')} variant="primary" className="w-full text-base sm:text-lg py-3" icon="fas fa-chalkboard-teacher">Bắt Đầu Kiểm Tra Toàn Diện Kana</Button>
+        <Button onClick={() => {setIsReviewingItems(false); setCurrentScreen('comprehensiveQuiz')}} variant="primary" className="w-full text-base sm:text-lg py-3" icon="fas fa-chalkboard-teacher">Bắt Đầu Kiểm Tra Toàn Diện Kana</Button>
       </div>
     </div>
   );

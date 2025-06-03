@@ -23,7 +23,7 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
   useEffect(() => {
     const newItems = characters.map((char, index) => ({
       ...char,
-      id: `${char.char}-${char.type}-${index}-${Math.random().toString(36).substring(2, 9)}`,
+      id: `${char.char}-${char.type}-${index}-${Math.random().toString(36).substring(2, 9)}`, // Unique ID
       userAnswer: '',
       isCorrect: null,
       revealed: false,
@@ -41,38 +41,32 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
     const calculateItemsPerRow = () => {
       if (gridContainerRef.current) {
         const gridWidth = gridContainerRef.current.offsetWidth;
-        // Query for a direct child that is a card, to avoid complex selectors
         const firstCard = gridContainerRef.current.querySelector(':scope > div.kana-grid-card') as HTMLElement;
         
         if (firstCard) {
-           // Use offsetWidth for the element's rendered width
           const cardRenderedWidth = firstCard.offsetWidth;
           const gapStyle = getComputedStyle(gridContainerRef.current).gap;
-          // Default gap, assuming Tailwind's gap-3 or gap-4 (12px or 16px)
-          const gap = gapStyle && gapStyle !== "normal" ? parseFloat(gapStyle) : 16; 
+          const gap = gapStyle && gapStyle !== "normal" ? parseFloat(gapStyle) : 16; // Default 16px (gap-4)
 
           if (cardRenderedWidth > 0) {
-            // Add gap to card width for total space per item
             setItemsPerRow(Math.max(1, Math.floor(gridWidth / (cardRenderedWidth + gap))));
           }
-        } else if (quizItems.length > 0) { // Fallback if direct card query fails but items exist
-            const approxCardWidth = 100; // Approximate width
-            const gap = 16;
+        } else if (characters.length > 0) { // Fallback if direct card query fails
+            const approxCardWidth = 100; // Approximate width for small screens
+            const gap = 12; // Tailwind gap-3
             setItemsPerRow(Math.max(1, Math.floor(gridWidth / (approxCardWidth + gap))));
         }
       }
     };
 
-    // Call once after DOM is ready for gridContainerRef
-    // Timeout ensures that the grid has rendered for width calculation
-    const timerId = setTimeout(calculateItemsPerRow, 0);
+    const timerId = setTimeout(calculateItemsPerRow, 0); // Calculate after initial render
     
     window.addEventListener('resize', calculateItemsPerRow);
     return () => {
       clearTimeout(timerId);
       window.removeEventListener('resize', calculateItemsPerRow);
     };
-  }, [quizItems.length]); // Rerun if the number of items changes, as this might affect layout
+  }, [characters.length]); // Re-calculate if number of characters (and thus quizItems) changes
 
 
   useEffect(() => {
@@ -87,14 +81,17 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
       if (item.id === id && !item.revealed) {
         const correctRomaji = normalizeRomaji(item.romaji);
         const isCorrect = item.userAnswer.trim().toLowerCase() === correctRomaji;
-        if (!isCorrect && onMarkIncorrect) {
+        if (!isCorrect && onMarkIncorrect && !isReviewMode) { // Only mark incorrect if not in review mode for new mistakes
           onMarkIncorrect(item);
+        } else if (!isCorrect && onMarkIncorrect && isReviewMode && item.isCorrect === null) {
+           // If in review mode and it's the first check for this item in this review session
+           onMarkIncorrect(item); // Still counts as a mistake in this review round
         }
         return { ...item, isCorrect, revealed: true };
       }
       return item;
     });
-  }, [onMarkIncorrect, normalizeRomaji]);
+  }, [onMarkIncorrect, normalizeRomaji, isReviewMode]);
 
   const handleInputChange = (id: string, value: string) => {
     setQuizItems(prevItems =>
@@ -108,17 +105,21 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
     const currentIndex = quizItems.findIndex(item => item.id === id);
     if (currentIndex === -1) return;
 
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
-      setQuizItems(prev => checkSingleAnswer(id, prev));
-      const nextFocusableItem = quizItems.find((item, idx) => idx > currentIndex && !item.revealed) || quizItems.find(item => !item.revealed && item.id !== id);
+      // Check answer for the current item
+      const itemsAfterCheck = checkSingleAnswer(id, quizItems);
+      setQuizItems(itemsAfterCheck);
+
+      // Find next focusable item (unrevealed or next in line)
+      const nextFocusableItem = itemsAfterCheck.find((item, idx) => idx > currentIndex && !item.revealed) || itemsAfterCheck.find(item => !item.revealed && item.id !== id);
       
       if (nextFocusableItem) {
         setFocusedInputId(nextFocusableItem.id);
       } else {
-         // If no unrevealed items left, or current was the last one, focus finish button
-        const allRevealed = quizItems.every(item => item.revealed);
-        if (allRevealed || !quizItems.find(item => !item.revealed)) {
+        // If no unrevealed items left, focus finish button
+        const allRevealed = itemsAfterCheck.every(item => item.revealed);
+        if (allRevealed) {
              (document.getElementById('finish-kana-grid-quiz-btn') as HTMLElement)?.focus();
         }
       }
@@ -140,6 +141,7 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
   };
 
   const handleBlurCheck = (id: string) => {
+    // Only check on blur if input is not empty and not yet revealed
     setQuizItems(prevItems => {
       const itemToCheck = prevItems.find(item => item.id === id);
       if (itemToCheck && itemToCheck.userAnswer.trim() !== '' && !itemToCheck.revealed) {
@@ -151,12 +153,15 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
 
   const handleFinishQuiz = () => {
     let itemsAfterFinalCheck = [...quizItems];
+    // Check any remaining unrevealed items
     itemsAfterFinalCheck = itemsAfterFinalCheck.map(item => {
       if (!item.revealed) { 
         const correctRomaji = normalizeRomaji(item.romaji);
         const isCorrect = item.userAnswer.trim().toLowerCase() === correctRomaji;
-        if (!isCorrect && onMarkIncorrect) {
+        if (!isCorrect && onMarkIncorrect && !isReviewMode) {
           onMarkIncorrect(item);
+        } else if (!isCorrect && onMarkIncorrect && isReviewMode && item.isCorrect === null) {
+           onMarkIncorrect(item);
         }
         return { ...item, isCorrect, revealed: true };
       }
@@ -186,48 +191,46 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
   const totalCount = quizItems.length;
 
   return (
-    <div className="p-4 sm:p-6 bg-white rounded-2xl shadow-2xl">
+    <div className="p-4 sm:p-6 bg-slate-50 rounded-2xl shadow-2xl">
       <h2 className="text-2xl sm:text-3xl font-bold text-center text-slate-800 mb-2">
-        {isReviewMode ? "Ôn Tập Lỗi Sai (Kana)" : "Gõ Romaji cho Kana Bạn Biết"}
+        {isReviewMode ? "Ôn Tập Lỗi Sai (Kana)" : "Gõ Romaji"}
       </h2>
-      <p className="text-center text-sm text-slate-500 mb-6">
-        Điền Romaji vào ô, nhấn Enter để kiểm tra. Sử dụng phím mũi tên để di chuyển.
+      <p className="text-center text-sm text-slate-500 mb-5">
+        Điền Romaji, nhấn Enter hoặc Tab để kiểm tra. Dùng phím mũi tên để di chuyển.
       </p>
       
-      <div className="text-center mb-4 text-base sm:text-lg font-semibold text-blue-600">
+      <div className="text-center mb-5 text-base sm:text-lg font-bold text-blue-700">
         Đã trả lời: {answeredCount} / {totalCount}
       </div>
 
       <div
         ref={gridContainerRef}
-        className="kana-grid-container grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-3 sm:gap-4 mb-6"
+        className="kana-grid-container grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-3 sm:gap-4 mb-8"
         role="form"
+        aria-labelledby="kana-grid-title"
       >
         {quizItems.map((item) => {
-          let cardBaseClass = "kana-grid-card border-2 rounded-xl p-2 sm:p-3 flex flex-col items-center justify-between min-h-[120px] sm:min-h-[140px] transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl";
-          let cardStateClass = "";
+          let cardBaseClass = "kana-grid-card bg-white border-2 rounded-xl p-3 flex flex-col items-center justify-between shadow-md hover:shadow-lg transition-all duration-200 ease-in-out";
+          let cardStateClass = "border-slate-300"; // Default border
           let inputBaseClass = "w-full text-center text-base sm:text-lg p-2 border-2 rounded-md focus:outline-none mt-2 transition-colors duration-200";
-          let inputStateClass = "";
+          let inputStateClass = "border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"; // Default input border + focus
 
           if (item.revealed) {
             if (item.isCorrect) {
-              cardStateClass = "bg-green-50 border-green-500";
-              inputStateClass = "border-green-500 bg-green-100 text-green-800 font-semibold";
+              cardStateClass = "bg-green-50 border-green-400";
+              inputStateClass = "border-green-400 bg-green-100 text-green-700 font-semibold cursor-default";
             } else {
-              cardStateClass = "bg-red-50 border-red-500";
-              inputStateClass = "border-red-500 bg-red-100 text-red-800 font-semibold";
+              cardStateClass = "bg-red-50 border-red-400";
+              inputStateClass = "border-red-400 bg-red-100 text-red-700 font-semibold cursor-default";
             }
-          } else {
-            cardStateClass = "bg-sky-50 border-sky-300 hover:border-blue-400";
-            inputStateClass = "border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-300";
+          } else if (item.id === focusedInputId) {
+             cardStateClass = "border-blue-500 shadow-lg"; // Focused card border
+             // inputStateClass already handles its own focus style
           }
-           if(item.id === focusedInputId && !item.revealed) {
-              cardStateClass += " ring-2 ring-blue-500 ring-offset-1";
-           }
 
           return (
             <div key={item.id} className={`${cardBaseClass} ${cardStateClass}`}>
-              <div className="font-noto-jp text-4xl sm:text-5xl font-bold text-slate-800 flex-grow flex items-center justify-center">
+              <div className="font-['Noto_Sans_JP'] text-4xl sm:text-5xl whitespace-nowrap font-bold text-slate-800 flex-grow flex items-baseline justify-center select-none">
                 {item.char}
               </div>
               <input
@@ -244,13 +247,19 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
                 autoCapitalize="none"
                 spellCheck="false"
                 aria-label={`Nhập Romaji cho ký tự ${item.char}`}
+                aria-describedby={item.revealed ? `feedback-${item.id}` : undefined}
               />
               {item.revealed && !item.isCorrect && (
-                <div className="text-xs sm:text-sm text-center mt-1">
-                    <span className="text-red-700 font-semibold">Đáp án: {normalizeRomaji(item.romaji)}</span><br/>
-                    <span className="text-slate-500">Bạn nhập: {item.userAnswer || "(trống)"}</span>
+                <div id={`feedback-${item.id}`} className="text-xs sm:text-sm text-center mt-1.5" aria-live="polite">
+                    <span className="block text-red-600 font-semibold">Đáp án: {normalizeRomaji(item.romaji)}</span>
+                    <span className="block text-slate-500">Bạn nhập: {item.userAnswer || "(trống)"}</span>
                 </div>
               )}
+               {item.revealed && item.isCorrect && (
+                 <div id={`feedback-${item.id}`} className="text-xs sm:text-sm text-center mt-1.5 text-green-600 font-semibold" aria-live="polite">
+                    Chính xác!
+                </div>
+               )}
             </div>
           );
         })}
@@ -262,8 +271,9 @@ const KanaGridQuiz: React.FC<KanaGridQuizProps> = ({ characters, onQuizFinish, o
             variant="primary" 
             icon="fas fa-check-circle" 
             className="text-lg py-3 px-6"
+            aria-label="Hoàn thành và xem kết quả"
         >
-          Hoàn Thành Kiểm Tra
+          Hoàn Thành
         </Button>
       </div>
     </div>

@@ -23,7 +23,7 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   disabled = false,
   type = 'button',
-  id, // Destructure id
+  id, 
 }) => {
   let baseStyle = "py-2.5 px-4 rounded-lg font-semibold cursor-pointer transition-all duration-200 ease-in-out inline-flex items-center justify-center gap-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2";
   let variantStyle = "";
@@ -34,36 +34,32 @@ const Button: React.FC<ButtonProps> = ({
      baseStyle += " hover:-translate-y-px hover:shadow-md active:translate-y-0";
   }
 
-  if (variant === 'primary') {
-    variantStyle = active || variant === 'primary' && !variant.includes('outline') // Default active for primary if not outline
-      ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white border-transparent focus:ring-blue-500"
-      : "bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 focus:ring-blue-500";
-       if (active) {
-         variantStyle = "bg-gradient-to-br from-blue-600 to-purple-600 text-white border-transparent focus:ring-blue-500";
-       }
-  } else if (variant === 'outline') {
-     variantStyle = active 
-      ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white border-transparent focus:ring-blue-500" 
-      : "bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 hover:text-blue-700 focus:ring-blue-500";
-  } else if (variant === 'secondary') {
-    variantStyle = "bg-gradient-to-br from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800 focus:ring-green-500";
+  const activeFilledStyle = "bg-gradient-to-br from-blue-600 to-purple-600 text-white border-transparent focus:ring-blue-500";
+  const inactiveOutlineStyle = "bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 hover:text-blue-700 focus:ring-blue-500";
+  
+  switch (variant) {
+    case 'primary':
+      variantStyle = activeFilledStyle; // Primary variant is always "active" looking (filled gradient)
+      break;
+    case 'outline':
+      variantStyle = active ? activeFilledStyle : inactiveOutlineStyle;
+      break;
+    case 'secondary':
+      variantStyle = "bg-gradient-to-br from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800 focus:ring-green-500";
+      break;
+    default:
+      variantStyle = inactiveOutlineStyle; // Fallback, though 'primary' is default
   }
   
-  // Special handling for primary button if it's also marked active
-  if (variant === 'primary' && active) {
-    variantStyle = "bg-gradient-to-br from-blue-600 to-purple-600 text-white border-transparent focus:ring-blue-500"
-  }
-
-
   return (
     <button 
-      id={id} // Pass id to the button element
+      id={id} 
       type={type}
       onClick={onClick} 
       className={`${baseStyle} ${variantStyle} ${className}`}
       disabled={disabled}
     >
-      {icon && <i className={`${icon} ${variant === 'primary' && active ? 'text-white' : ''}`}></i>}
+      {icon && <i className={`${icon} ${(variant === 'primary' || (variant === 'outline' && active)) ? 'text-white' : ''}`}></i>}
       {children}
     </button>
   );
