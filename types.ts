@@ -1,4 +1,5 @@
 
+
 export interface JapaneseCharacter {
   char: string;
   romaji: string;
@@ -85,13 +86,15 @@ export enum VocabularyQuestionType {
 
 export type IconVariant = 'primary' | 'default';
 
-export type TestScreen = 'setup' | 'kanaGridQuiz' | 'comprehensiveQuiz' | 'vocabularyQuiz' | 'results';
+export type TestScreen = 'setup' | 'kanaGridQuiz' | 'comprehensiveQuiz' | 'vocabularyQuiz' | 'results' | 'matchingGame';
 
-export interface QuizResultSummary {
+// Used to be QuizResultSummary, now more generic for different quiz types
+export interface QuizPerformance {
+  quizType: 'kanaGrid' | 'vocabulary' | 'comprehensive' | 'matchingGame';
+  timestamp: number;
   score: number;
   total: number;
-  quizType: 'kanaGrid' | 'vocabulary' | 'comprehensive'; // To know what to retry
-  incorrectItems?: (JapaneseCharacter | VocabularyWord)[]; // Optional: list of items for review on results screen
+  incorrectItemsSnapshot?: (JapaneseCharacter | VocabularyWord)[]; // Snapshot of incorrect items for this specific quiz
 }
 
 // Added for CharacterTable component
@@ -107,4 +110,50 @@ export interface OrganizedTableData {
   columnHeaders?: string[]; // e.g., A, I, U, E, O
   rows: OrganizedTableDataRow[];
   footerChar?: JapaneseCharacter | { char: string; romaji: string; note?: string } | null; // For ん, ン
+}
+
+// For Matching Game (Kana-Romaji or Hira-Kata)
+export type MatchGameMode = 'kanaRomaji' | 'hiraganaKatakana';
+
+export interface HiraganaKatakanaPair {
+  id: string; // Unique ID for the pair, e.g., based on commonRomaji
+  hiragana: JapaneseCharacter;
+  katakana: JapaneseCharacter;
+  commonRomaji: string;
+}
+
+export type MatchGameDataSource = JapaneseCharacter[] | HiraganaKatakanaPair[];
+
+export interface MatchGameCard {
+  id: string; // Unique ID for the card instance (e.g., 'kana-あ-1' or 'romaji-a-1')
+  type: 'kana' | 'romaji'; // Type of content on the card: 'kana' for Japanese chars, 'romaji' for Romaji text
+  value: string; // The actual character (e.g., 'あ', 'ア') or romaji (e.g., 'a')
+  originalCharacterPairId: string; // Identifier linking this card to its pair (e.g., based on commonRomaji or a unique ID from HiraganaKatakanaPair)
+  isFlipped: boolean;
+  isMatched: boolean;
+  sourceCardType?: 'hiragana' | 'katakana'; // To distinguish between hiragana and katakana cards when type is 'kana'
+}
+
+// Types for Chatbot and UserData
+export interface ChatMessagePart {
+  text: string;
+}
+export interface ChatMessage {
+  role: 'user' | 'model';
+  parts: ChatMessagePart[];
+  timestamp?: number;
+}
+
+export interface UserData {
+  lastStudiedTimestamp?: number;
+  studyStreak?: number;
+  // Store incorrect items as a map for easier add/remove by a unique key
+  incorrectItems?: Record<string, JapaneseCharacter | VocabularyWord>; // Key: e.g., "char-あ" or "vocab-犬"
+  learnedChars?: Record<string, { char: string, lastSeen: number, type: JapaneseCharacter['type'] }>; // Key: char string
+  quizPerformances?: QuizPerformance[];
+  chatHistory?: ChatMessage[];
+  userPreferences?: {
+    displayName?: string;
+    // Add other preferences here
+  };
 }

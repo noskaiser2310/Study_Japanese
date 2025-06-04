@@ -13,6 +13,7 @@ import {
 import { JapaneseCharacter, CharacterScriptType } from '../types';
 import Button from '../components/Button';
 import CharacterTable from '../components/CharacterTable';
+import AudioRecorder from '../components/AudioRecorder'; // Import AudioRecorder
 
 // Re-define or import speakCharacter utility
 const speakCharacterUtil = (text: string, lang: string = 'ja-JP') => {
@@ -24,14 +25,13 @@ const speakCharacterUtil = (text: string, lang: string = 'ja-JP') => {
     utterance.pitch = 1.0;
     utterance.volume = 0.9;
 
-    // Apply active class to button
     const pronounceButtons = document.querySelectorAll('.pronounce-btn-indicator');
     pronounceButtons.forEach(btn => btn.classList.add('pronounce-active'));
     
     utterance.onend = () => {
         pronounceButtons.forEach(btn => btn.classList.remove('pronounce-active'));
     };
-    utterance.onerror = () => { // Also remove on error
+    utterance.onerror = () => { 
         pronounceButtons.forEach(btn => btn.classList.remove('pronounce-active'));
     };
 
@@ -41,30 +41,59 @@ const speakCharacterUtil = (text: string, lang: string = 'ja-JP') => {
   }
 };
 
-const CharacterCard: React.FC<{ char: JapaneseCharacter, onCharClick?: (charItem: JapaneseCharacter) => void }> = ({ char, onCharClick }) => (
-  <div 
-    className={`bg-white p-3 sm:p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out border border-sky-100 flex flex-col items-center justify-center min-h-[100px] sm:min-h-[130px] ${onCharClick ? 'cursor-pointer hover:bg-sky-50 hover:-translate-y-1' : ''}`}
-    onClick={onCharClick ? () => onCharClick(char) : undefined}
-    role={onCharClick ? "button" : undefined}
-    tabIndex={onCharClick ? 0 : undefined}
-    onKeyPress={onCharClick ? (e) => (e.key === 'Enter' || e.key === ' ') && onCharClick(char) : undefined}
-    aria-label={onCharClick ? `Phát âm ${char.char}` : undefined}
+const CharacterCard: React.FC<{ 
+  char: JapaneseCharacter, 
+  onCharClick?: (charItem: JapaneseCharacter) => void,
+  enableAudioRecording?: boolean 
+}> = ({ char, onCharClick, enableAudioRecording }) => {
+  
+  const handleClick = (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
+     if ( (e.target as HTMLElement).closest('.audio-recorder-container-card') ) {
+        return;
+    }
+    if (onCharClick) {
+      onCharClick(char);
+    }
+  };
+  
+  return (
+    <div 
+      className={`bg-white p-3 sm:p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out border border-sky-100 flex flex-col items-center justify-between min-h-[150px] sm:min-h-[180px] ${onCharClick ? 'cursor-pointer hover:bg-sky-50 hover:-translate-y-1' : ''}`}
+      onClick={handleClick}
+      role={onCharClick ? "button" : undefined}
+      tabIndex={onCharClick ? 0 : undefined}
+      onKeyPress={onCharClick ? (e) => (e.key === 'Enter' || e.key === ' ') && handleClick(e) : undefined}
+      aria-label={onCharClick ? `Phát âm ${char.char}` : undefined}
     >
-    <div className="font-['Noto_Sans_JP'] text-3xl sm:text-4xl font-bold text-slate-800 mb-1">{char.char}</div>
-    <div className="text-xs sm:text-sm text-blue-600 font-semibold">{char.romaji.split(' ')[0]}</div>
-    {char.type === 'kanji' && (
-      <>
-        <div className="text-xs text-slate-500 mt-1 text-center">
-            {char.meaning && <p><strong>Nghĩa:</strong> {char.meaning}</p>}
-            {char.onyomi && <p><strong>On:</strong> {char.onyomi}</p>}
-            {char.kunyomi && <p><strong>Kun:</strong> {char.kunyomi}</p>}
+      <div className="text-center flex-grow">
+        <div className="font-['Noto_Sans_JP'] text-3xl sm:text-4xl font-bold text-slate-800 mb-1">{char.char}</div>
+        <div className="text-xs sm:text-sm text-blue-600 font-semibold">{char.romaji.split(' ')[0]}</div>
+        {char.type === 'kanji' && (
+          <div className="text-xs text-slate-500 mt-1 text-center">
+              {char.meaning && <p><strong>Nghĩa:</strong> {char.meaning}</p>}
+              {char.onyomi && <p className="text-[10px]"><strong>On:</strong> {char.onyomi}</p>}
+              {char.kunyomi && <p className="text-[10px]"><strong>Kun:</strong> {char.kunyomi}</p>}
+          </div>
+        )}
+      </div>
+      {enableAudioRecording && (
+        <div className="audio-recorder-container-card mt-2 w-full flex justify-center scale-90">
+           <AudioRecorder label={`Ghi ${char.char}`} />
         </div>
-      </>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
+};
 
-const KanjiSetDisplay: React.FC<{ title: string; characters: JapaneseCharacter[]; typeId: string; icon?: string; onCharClick?: (charItem: JapaneseCharacter) => void }> = ({ title, characters, typeId, icon, onCharClick }) => (
+
+const KanjiSetDisplay: React.FC<{ 
+  title: string; 
+  characters: JapaneseCharacter[]; 
+  typeId: string; 
+  icon?: string; 
+  onCharClick?: (charItem: JapaneseCharacter) => void;
+  enableAudioRecording?: boolean;
+}> = ({ title, characters, typeId, icon, onCharClick, enableAudioRecording }) => (
   <section className="mb-8 sm:mb-12" id={typeId}>
     <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-700 mb-4 sm:mb-6 pb-2 border-b-2 border-blue-300 flex items-center">
       {icon && <i className={`${icon} mr-2 sm:mr-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-2xl sm:text-3xl`}></i>}
@@ -72,7 +101,7 @@ const KanjiSetDisplay: React.FC<{ title: string; characters: JapaneseCharacter[]
     </h2>
     {characters.length > 0 ? (
       <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
-        {characters.map(char => <CharacterCard key={`${typeId}-${char.char}-${char.romaji}`} char={char} onCharClick={onCharClick} />)}
+        {characters.map(char => <CharacterCard key={`${typeId}-${char.char}-${char.romaji}`} char={char} onCharClick={onCharClick} enableAudioRecording={enableAudioRecording} />)}
       </div>
     ) : (
       <p className="text-slate-500">Không có ký tự nào trong mục này.</p>
@@ -141,26 +170,26 @@ const HomePage: React.FC = () => {
       
       { (visibleSection === CharacterScriptType.All || visibleSection === CharacterScriptType.Hiragana) && (
         <>
-          <CharacterTable data={organizedHiraganaBasic} sectionId={sections.hiragana} onCharClick={handleCharPronunciation} />
-          <CharacterTable data={organizedHiraganaDakutenHandakuten} sectionId="hiragana-bien-am" onCharClick={handleCharPronunciation} />
-          <CharacterTable data={organizedHiraganaYoon} sectionId="hiragana-am-ghep" onCharClick={handleCharPronunciation} />
+          <CharacterTable data={organizedHiraganaBasic} sectionId={sections.hiragana} onCharClick={handleCharPronunciation} enableAudioRecording={true} />
+          <CharacterTable data={organizedHiraganaDakutenHandakuten} sectionId="hiragana-bien-am" onCharClick={handleCharPronunciation} enableAudioRecording={true} />
+          <CharacterTable data={organizedHiraganaYoon} sectionId="hiragana-am-ghep" onCharClick={handleCharPronunciation} enableAudioRecording={true} />
         </>
       )}
 
       { (visibleSection === CharacterScriptType.All || visibleSection === CharacterScriptType.Katakana) && (
         <>
-          <CharacterTable data={organizedKatakanaBasic} sectionId={sections.katakana} onCharClick={handleCharPronunciation} />
-          <CharacterTable data={organizedKatakanaDakutenHandakuten} sectionId="katakana-bien-am" onCharClick={handleCharPronunciation} />
-          <CharacterTable data={organizedKatakanaYoon} sectionId="katakana-am-ghep" onCharClick={handleCharPronunciation} />
+          <CharacterTable data={organizedKatakanaBasic} sectionId={sections.katakana} onCharClick={handleCharPronunciation} enableAudioRecording={true} />
+          <CharacterTable data={organizedKatakanaDakutenHandakuten} sectionId="katakana-bien-am" onCharClick={handleCharPronunciation} enableAudioRecording={true} />
+          <CharacterTable data={organizedKatakanaYoon} sectionId="katakana-am-ghep" onCharClick={handleCharPronunciation} enableAudioRecording={true} />
         </>
       )}
       
       { (visibleSection === CharacterScriptType.All || visibleSection === 'katakana-extended') && (
-         <CharacterTable data={organizedKatakanaExtendedTable} sectionId={sections.katakanaExtended} onCharClick={handleCharPronunciation} />
+         <CharacterTable data={organizedKatakanaExtendedTable} sectionId={sections.katakanaExtended} onCharClick={handleCharPronunciation} enableAudioRecording={true} />
       )}
 
       { (visibleSection === CharacterScriptType.All || visibleSection === CharacterScriptType.Kanji) && (
-          <KanjiSetDisplay title="Một Số Kanji Cơ Bản (漢字)" characters={kanji} typeId={sections.kanji} icon="fas fa-scroll" onCharClick={handleCharPronunciation} />
+          <KanjiSetDisplay title="Một Số Kanji Cơ Bản (漢字)" characters={kanji} typeId={sections.kanji} icon="fas fa-scroll" onCharClick={handleCharPronunciation} enableAudioRecording={true} />
       )}
     </div>
   );

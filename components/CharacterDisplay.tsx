@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { JapaneseCharacter } from '../types';
 import Button from './Button'; 
+import AudioRecorder from './AudioRecorder'; // Import AudioRecorder
 
 interface CharacterDisplayProps {
   charData: JapaneseCharacter | null;
@@ -43,7 +43,6 @@ const CharacterDisplay: React.FC<CharacterDisplayProps> = ({
         element.style.transition = `width ${currentRotationSpeedMs / 1000}s linear`;
         element.style.width = '100%';
       } else {
-         // Persist current width when paused
          const computedWidth = getComputedStyle(element).width;
          element.style.transition = 'none';
          element.style.width = computedWidth;
@@ -54,14 +53,11 @@ const CharacterDisplay: React.FC<CharacterDisplayProps> = ({
 
   const handlePronounceClick = () => {
     if (charData && onPronounce) {
-      // Add active class to the button clicked
-      const pronounceButton = document.querySelector('.pronounce-btn-indicator.study-page-pronounce'); // Specific selector
+      const pronounceButton = document.querySelector('.pronounce-btn-indicator.study-page-pronounce');
       pronounceButton?.classList.add('pronounce-active');
       
       onPronounce(charData.char, 'ja-JP');
 
-      // Remove active class after a delay, assuming pronunciation takes some time
-      // This is a simple approach; a more robust way would be to use utterance.onend
       setTimeout(() => {
         pronounceButton?.classList.remove('pronounce-active');
       }, 1000); 
@@ -104,16 +100,23 @@ const CharacterDisplay: React.FC<CharacterDisplayProps> = ({
            <Button 
              onClick={handlePronounceClick}
              variant="outline"
-             className="absolute top-2 right-2 sm:top-4 sm:right-4 !p-2 sm:!p-2.5 text-lg sm:text-xl pronounce-btn-indicator study-page-pronounce" // Added specific class
+             className="absolute top-2 right-2 sm:top-4 sm:right-4 !p-2 sm:!p-2.5 text-lg sm:text-xl pronounce-btn-indicator study-page-pronounce"
              icon="fas fa-volume-up"
              aria-label={`Phát âm ký tự ${charData.char}`}
            />
         )}
       </div>
 
-      <div className="font-['Inter'] text-2xl sm:text-3xl font-bold text-blue-600 mb-3 text-center">
+      <div className="font-['Inter'] text-2xl sm:text-3xl font-bold text-blue-600 mb-1 text-center">
         {charData?.romaji || '...'}
       </div>
+      
+      {charData && (
+        <div className="flex flex-col items-center gap-2 mb-3">
+            <AudioRecorder label={`Ghi âm "${charData.char}"`} />
+        </div>
+      )}
+
 
       <div className="h-2.5 bg-slate-200 rounded-lg overflow-hidden mb-5" role="progressbar" aria-valuenow={isRotating ? 100 : 0} aria-valuemin={0} aria-valuemax={100}>
         <div 
