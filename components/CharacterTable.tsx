@@ -1,48 +1,38 @@
+
 import React from 'react';
-import { JapaneseCharacter, OrganizedTableData } from '../types'; 
-import AudioRecorder from './AudioRecorder'; // Import AudioRecorder
+import { JapaneseCharacter, OrganizedTableData } from '../types'; // Corrected import
 
 interface CharacterTableCellProps {
   item: JapaneseCharacter | { char: string; romaji: string; note?: string } | null;
   onCharClick?: (charItem: JapaneseCharacter | { char: string; romaji: string; note?: string }) => void;
-  showAudioRecorder?: boolean; // New prop
 }
 
-const CharacterTableCell: React.FC<CharacterTableCellProps> = ({ item, onCharClick, showAudioRecorder }) => {
+const CharacterTableCell: React.FC<CharacterTableCellProps> = ({ item, onCharClick }) => {
   if (!item) {
-    return <div className="min-h-[6rem] sm:min-h-[7rem] border border-slate-200 bg-slate-50"></div>;
+    return <div className="h-16 sm:h-20 border border-slate-200 bg-slate-50"></div>;
   }
   
-  const handleClick = (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
-    // Prevent click propagation if the click target is within the AudioRecorder
-    if ( (e.target as HTMLElement).closest('.audio-recorder-container') ) {
-        return;
-    }
-    if (onCharClick && item) {
+  const handleClick = () => {
+    if (onCharClick && item) { // Ensure item is not null before calling
       onCharClick(item);
     }
   };
 
   return (
     <div 
-      className={`min-h-[6rem] sm:min-h-[7rem] p-1.5 border border-slate-200 bg-white flex flex-col justify-center items-center text-center transition-all duration-150 ease-in-out group-hover:scale-105 group-hover:shadow-md ${onCharClick ? 'cursor-pointer hover:bg-sky-100' : ''}`}
-      onClick={handleClick}
+      className={`h-16 sm:h-20 p-1 border border-slate-200 bg-white flex flex-col justify-center items-center text-center transition-all duration-150 ease-in-out group-hover:scale-105 group-hover:shadow-md ${onCharClick ? 'cursor-pointer hover:bg-sky-100' : ''}`}
+      onClick={onCharClick ? handleClick : undefined}
       role={onCharClick ? "button" : undefined}
       tabIndex={onCharClick ? 0 : undefined}
-      onKeyPress={onCharClick ? (e) => (e.key === 'Enter' || e.key === ' ') && handleClick(e) : undefined}
+      onKeyPress={onCharClick ? (e) => (e.key === 'Enter' || e.key === ' ') && handleClick() : undefined}
       aria-label={onCharClick && item ? `Phát âm ${item.char}` : undefined}
     >
       <div className="font-['Noto_Sans_JP'] text-xl sm:text-2xl md:text-3xl font-bold text-slate-800">
         {item.char}
       </div>
-      <div className="text-[10px] sm:text-xs text-blue-600 font-medium mb-1">
+      <div className="text-[10px] sm:text-xs text-blue-600 font-medium">
         {'note' in item && item.note ? item.note : item.romaji.split(' ')[0]}
       </div>
-      {showAudioRecorder && (
-        <div className="audio-recorder-container mt-auto w-full flex justify-center scale-[0.8]"> {/* scale down for smaller cells */}
-           <AudioRecorder label={`Ghi âm ${item.char}`} />
-        </div>
-      )}
     </div>
   );
 };
@@ -51,10 +41,9 @@ interface CharacterTableProps {
   data: OrganizedTableData;
   sectionId: string;
   onCharClick?: (charItem: JapaneseCharacter | { char: string; romaji: string; note?: string }) => void;
-  enableAudioRecording?: boolean; // New prop
 }
 
-const CharacterTable: React.FC<CharacterTableProps> = ({ data, sectionId, onCharClick, enableAudioRecording }) => {
+const CharacterTable: React.FC<CharacterTableProps> = ({ data, sectionId, onCharClick }) => {
   const { title, columnHeaders, rows, footerChar, icon } = data;
 
   return (
@@ -85,8 +74,8 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ data, sectionId, onChar
                   {row.rowSubHeader && <div className="text-[10px] text-blue-500">({row.rowSubHeader})</div>}
                 </td>
                 {row.cells.map((cellData, cellIndex) => (
-                  <td key={cellIndex} className="border-r border-slate-200 p-0 m-0">
-                    <CharacterTableCell item={cellData} onCharClick={onCharClick} showAudioRecorder={enableAudioRecording} />
+                  <td key={cellIndex} className="border-r border-slate-200 p-0 m-0"> {/* Make parent TD a group for hover */}
+                    <CharacterTableCell item={cellData} onCharClick={onCharClick} />
                   </td>
                 ))}
               </tr>
@@ -94,7 +83,7 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ data, sectionId, onChar
             {footerChar && (
                  <tr className="group">
                     <td colSpan={ (columnHeaders?.length || 0) +1 } className="p-0 m-0 border-t-2 border-slate-400">
-                         <CharacterTableCell item={footerChar} onCharClick={onCharClick} showAudioRecorder={enableAudioRecording} />
+                         <CharacterTableCell item={footerChar} onCharClick={onCharClick} />
                     </td>
                  </tr>
             )}

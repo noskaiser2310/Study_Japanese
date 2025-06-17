@@ -5,7 +5,6 @@ import Navigation from './components/Navigation';
 import HomePage from './pages/HomePage';
 import StudyPage from './pages/StudyPage';
 import TestPage from './pages/TestPage';
-import Chatbot from './components/Chatbot'; // Import Chatbot
 
 const App: React.FC = () => {
   return (
@@ -21,9 +20,9 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/home" replace />} /> {/* Fallback to home */}
         </Routes>
       </main>
-      <Chatbot /> {/* Add Chatbot FAB here */}
       <footer className="text-center mt-auto py-4 sm:py-6 text-slate-500 text-xs sm:text-sm">
         <p>Hệ thống học tiếng Nhật nâng cao • Sử dụng kỹ thuật lặp lại ngắt quãng để tối ưu hóa trí nhớ</p>
+        <p>&copy; {new Date().getFullYear()} - Phát triển bởi AI</p>
       </footer>
     </div>
   );
