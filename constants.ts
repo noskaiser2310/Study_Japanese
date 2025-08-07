@@ -458,6 +458,519 @@ export const organizedKatakanaYoon: OrganizedTableData = {
     { rowHeader: 'P', rowSubHeader: 'ピャ行', cells: [findCharacter(katakanaYoonChars, 'ピャ'), findCharacter(katakanaYoonChars, 'ピュ'), findCharacter(katakanaYoonChars, 'ピョ')] },
   ],
 };
+// Thêm vào types.ts
+export interface KanjiCharacter {
+  kanji: string;
+  readings: {
+    kunyomi?: string[];  // Cách đọc Nhật Bản
+    onyomi?: string[];   // Cách đọc Trung Hoa
+  };
+  romaji: string[];
+  meaning_vi: string;
+  examples?: {
+    word: string;
+    reading: string;
+    romaji: string;
+    meaning_vi: string;
+  }[];
+  level?: string; // N5, N4, etc.
+}
+
+// Dữ liệu kanji mới
+const kanjiLibraryData: KanjiCharacter[] = [
+  // Số đếm cơ bản (Numbers)
+  {
+    kanji: "一",
+    readings: { kunyomi: ["ひと"], onyomi: ["いち"] },
+    romaji: ["hito", "ichi"],
+    meaning_vi: "một, nhất",
+    examples: [
+      { word: "一つ", reading: "ひとつ", romaji: "hitotsu", meaning_vi: "một cái" },
+      { word: "一人", reading: "ひとり", romaji: "hitori", meaning_vi: "một người" },
+      { word: "一日", reading: "ついたち", romaji: "tsuitachi", meaning_vi: "ngày mồng một" },
+      { word: "一月", reading: "いちがつ", romaji: "ichigatsu", meaning_vi: "tháng một" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "二",
+    readings: { kunyomi: ["ふた"], onyomi: ["に"] },
+    romaji: ["futa", "ni"],
+    meaning_vi: "hai, nhị",
+    examples: [
+      { word: "二つ", reading: "ふたつ", romaji: "futatsu", meaning_vi: "hai cái" },
+      { word: "二人", reading: "ふたり", romaji: "futari", meaning_vi: "hai người" },
+      { word: "二日", reading: "ふつか", romaji: "futsuka", meaning_vi: "ngày mồng hai" },
+      { word: "二月", reading: "にがつ", romaji: "nigatsu", meaning_vi: "tháng hai" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "三",
+    readings: { kunyomi: ["みっ"], onyomi: ["さん"] },
+    romaji: ["mit", "san"],
+    meaning_vi: "ba, tam",
+    examples: [
+      { word: "三つ", reading: "みっつ", romaji: "mittsu", meaning_vi: "ba cái" },
+      { word: "三人", reading: "さんにん", romaji: "sannin", meaning_vi: "ba người" },
+      { word: "三日", reading: "みっか", romaji: "mikka", meaning_vi: "ngày mồng ba" },
+      { word: "三月", reading: "さんがつ", romaji: "sangatsu", meaning_vi: "tháng ba" },
+      { word: "三百", reading: "さんびゃく", romaji: "sanbyaku", meaning_vi: "ba trăm" },
+      { word: "三千円", reading: "さんぜんえん", romaji: "sanzen'en", meaning_vi: "ba nghìn yên" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "四",
+    readings: { kunyomi: ["よっ", "よん"], onyomi: ["し"] },
+    romaji: ["yot", "yon", "shi"],
+    meaning_vi: "bốn, tứ",
+    examples: [
+      { word: "四つ", reading: "よっつ", romaji: "yottsu", meaning_vi: "bốn cái" },
+      { word: "四日", reading: "よっか", romaji: "yokka", meaning_vi: "ngày mồng bốn" },
+      { word: "四月", reading: "しがつ", romaji: "shigatsu", meaning_vi: "tháng tư" },
+      { word: "四時", reading: "よじ", romaji: "yoji", meaning_vi: "bốn giờ" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "五",
+    readings: { kunyomi: ["いつ"], onyomi: ["ご"] },
+    romaji: ["itsu", "go"],
+    meaning_vi: "năm, ngũ",
+    examples: [
+      { word: "五つ", reading: "いつつ", romaji: "itsutsu", meaning_vi: "năm cái" },
+      { word: "五日", reading: "いつか", romaji: "itsuka", meaning_vi: "ngày mồng năm" },
+      { word: "五月", reading: "ごがつ", romaji: "gogatsu", meaning_vi: "tháng năm" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "六",
+    readings: { kunyomi: ["むっ"], onyomi: ["ろく"] },
+    romaji: ["mut", "roku"],
+    meaning_vi: "sáu, lục",
+    examples: [
+      { word: "六つ", reading: "むっつ", romaji: "muttsu", meaning_vi: "sáu cái" },
+      { word: "六日", reading: "むいか", romaji: "muika", meaning_vi: "ngày mồng sáu" },
+      { word: "六月", reading: "ろくがつ", romaji: "rokugatsu", meaning_vi: "tháng sáu" },
+      { word: "六百", reading: "ろっぴゃく", romaji: "roppyaku", meaning_vi: "sáu trăm" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "七",
+    readings: { kunyomi: ["なな"], onyomi: ["しち"] },
+    romaji: ["nana", "shichi"],
+    meaning_vi: "bảy, thất",
+    examples: [
+      { word: "七つ", reading: "ななつ", romaji: "nanatsu", meaning_vi: "bảy cái" },
+      { word: "七日", reading: "なのか", romaji: "nanoka", meaning_vi: "ngày mồng bảy" },
+      { word: "七月", reading: "しちがつ", romaji: "shichigatsu", meaning_vi: "tháng bảy" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "八",
+    readings: { kunyomi: ["やっ"], onyomi: ["はち"] },
+    romaji: ["yat", "hachi"],
+    meaning_vi: "tám, bát",
+    examples: [
+      { word: "八つ", reading: "やっつ", romaji: "yattsu", meaning_vi: "tám cái" },
+      { word: "八日", reading: "ようか", romaji: "youka", meaning_vi: "ngày mồng tám" },
+      { word: "八月", reading: "はちがつ", romaji: "hachigatsu", meaning_vi: "tháng tám" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "九",
+    readings: { kunyomi: ["ここの"], onyomi: ["きゅう", "く"] },
+    romaji: ["kokono", "kyuu", "ku"],
+    meaning_vi: "chín, cửu",
+    examples: [
+      { word: "九つ", reading: "ここのつ", romaji: "kokonotsu", meaning_vi: "chín cái" },
+      { word: "九日", reading: "ここのか", romaji: "kokonoka", meaning_vi: "ngày mồng chín" },
+      { word: "九月", reading: "くがつ", romaji: "kugatsu", meaning_vi: "tháng chín" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "十",
+    readings: { kunyomi: ["とお"], onyomi: ["じゅう"] },
+    romaji: ["too", "juu"],
+    meaning_vi: "mười, thập",
+    examples: [
+      { word: "十", reading: "とお", romaji: "too", meaning_vi: "mười" },
+      { word: "十日", reading: "とおか", romaji: "tooka", meaning_vi: "ngày mười" },
+      { word: "十月", reading: "じゅうがつ", romaji: "juugatsu", meaning_vi: "tháng mười" },
+      { word: "十歳", reading: "じゅっさい", romaji: "jussai", meaning_vi: "mười tuổi" }
+    ],
+    level: "N5"
+  },
+
+  // Số lớn (Large Numbers)
+  {
+    kanji: "百",
+    readings: { onyomi: ["ひゃく"] },
+    romaji: ["hyaku"],
+    meaning_vi: "trăm",
+    examples: [
+      { word: "百", reading: "ひゃく", romaji: "hyaku", meaning_vi: "một trăm" },
+      { word: "百円", reading: "ひゃくえん", romaji: "hyakuen", meaning_vi: "một trăm yên" },
+      { word: "百万", reading: "ひゃくまん", romaji: "hyakuman", meaning_vi: "một triệu" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "千",
+    readings: { onyomi: ["せん"] },
+    romaji: ["sen"],
+    meaning_vi: "nghìn",
+    examples: [
+      { word: "千", reading: "せん", romaji: "sen", meaning_vi: "một nghìn" },
+      { word: "千円", reading: "せんえん", romaji: "sen'en", meaning_vi: "một nghìn yên" },
+      { word: "一千万", reading: "いっせんまん", romaji: "issenman", meaning_vi: "mười triệu" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "万",
+    readings: { onyomi: ["まん"] },
+    romaji: ["man"],
+    meaning_vi: "vạn, mười nghìn",
+    examples: [
+      { word: "一万円", reading: "いちまんえん", romaji: "ichiman'en", meaning_vi: "mười nghìn yên" }
+    ],
+    level: "N5"
+  },
+
+  // Con người và danh tính (People & Identity)
+  {
+    kanji: "私",
+    readings: { kunyomi: ["わたし"] },
+    romaji: ["watashi"],
+    meaning_vi: "tôi",
+    examples: [
+      { word: "私", reading: "わたし", romaji: "watashi", meaning_vi: "tôi" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "人",
+    readings: { kunyomi: ["ひと"], onyomi: ["じん", "にん"] },
+    romaji: ["hito", "jin", "nin"],
+    meaning_vi: "người, nhân",
+    examples: [
+      { word: "人", reading: "ひと", romaji: "hito", meaning_vi: "người" },
+      { word: "日本人", reading: "にほんじん", romaji: "nihonjin", meaning_vi: "người Nhật" }
+    ],
+    level: "N5"
+  },
+
+  // Giáo dục (Education)
+  {
+    kanji: "大",
+    readings: { kunyomi: ["おお"], onyomi: ["だい"] },
+    romaji: ["oo", "dai"],
+    meaning_vi: "lớn, đại",
+    examples: [
+      { word: "大学", reading: "だいがく", romaji: "daigaku", meaning_vi: "đại học" },
+      { word: "大学生", reading: "だいがくせい", romaji: "daigakusei", meaning_vi: "sinh viên đại học" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "学",
+    readings: { onyomi: ["がく"] },
+    romaji: ["gaku"],
+    meaning_vi: "học, học tập",
+    examples: [
+      { word: "学生", reading: "がくせい", romaji: "gakusei", meaning_vi: "học sinh, sinh viên" },
+      { word: "留学生", reading: "りゅうがくせい", romaji: "ryuugakusei", meaning_vi: "du học sinh" },
+      { word: "学校", reading: "がっこう", romaji: "gakkou", meaning_vi: "trường học" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "生",
+    readings: { kunyomi: ["い"], onyomi: ["せい"] },
+    romaji: ["i", "sei"],
+    meaning_vi: "sinh, sống",
+    examples: [
+      { word: "先生", reading: "せんせい", romaji: "sensei", meaning_vi: "giáo viên" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "先",
+    readings: { onyomi: ["せん"] },
+    romaji: ["sen"],
+    meaning_vi: "trước, tiên",
+    examples: [
+      { word: "先生", reading: "せんせい", romaji: "sensei", meaning_vi: "giáo viên" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "校",
+    readings: { onyomi: ["こう"] },
+    romaji: ["kou"],
+    meaning_vi: "trường",
+    examples: [
+      { word: "学校", reading: "がっこう", romaji: "gakkou", meaning_vi: "trường học" }
+    ],
+    level: "N5"
+  },
+
+  // Thời gian và ngày tháng (Time & Dates)
+  {
+    kanji: "日",
+    readings: { kunyomi: ["ひ", "か"], onyomi: ["にち"] },
+    romaji: ["hi", "ka", "nichi"],
+    meaning_vi: "ngày, mặt trời",
+    examples: [
+      { word: "日", reading: "ひ", romaji: "hi", meaning_vi: "ngày" },
+      { word: "日本", reading: "にほん", romaji: "nihon", meaning_vi: "Nhật Bản" },
+      { word: "休日", reading: "きゅうじつ", romaji: "kyuujitsu", meaning_vi: "ngày nghỉ" },
+      { word: "誕生日", reading: "たんじょうび", romaji: "tanjoubi", meaning_vi: "sinh nhật" },
+      { word: "15日", reading: "じゅうごにち", romaji: "juugonichi", meaning_vi: "ngày 15" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "本",
+    readings: { kunyomi: ["もと"], onyomi: ["ほん"] },
+    romaji: ["moto", "hon"],
+    meaning_vi: "sách, gốc, bản",
+    examples: [
+      { word: "本", reading: "ほん", romaji: "hon", meaning_vi: "sách" },
+      { word: "日本", reading: "にほん", romaji: "nihon", meaning_vi: "Nhật Bản" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "月",
+    readings: { kunyomi: ["つき"], onyomi: ["がつ", "げつ"] },
+    romaji: ["tsuki", "gatsu", "getsu"],
+    meaning_vi: "tháng, mặt trăng",
+    examples: [
+      { word: "月", reading: "がつ", romaji: "gatsu", meaning_vi: "tháng" },
+      { word: "月曜日", reading: "げつようび", romaji: "getsuyoubi", meaning_vi: "thứ hai" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "時",
+    readings: { kunyomi: ["とき"], onyomi: ["じ"] },
+    romaji: ["toki", "ji"],
+    meaning_vi: "thời gian, giờ",
+    examples: [
+      { word: "時", reading: "じ", romaji: "ji", meaning_vi: "giờ" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "分",
+    readings: { kunyomi: ["わ"], onyomi: ["ふん", "ぶん"] },
+    romaji: ["wa", "fun", "bun"],
+    meaning_vi: "phút, phần",
+    examples: [
+      { word: "分", reading: "ふん", romaji: "fun", meaning_vi: "phút" }
+    ],
+    level: "N5"
+  },
+
+  // Các ngày trong tuần (Days of Week)
+  {
+    kanji: "火",
+    readings: { kunyomi: ["ひ"], onyomi: ["か"] },
+    romaji: ["hi", "ka"],
+    meaning_vi: "lửa, hỏa",
+    examples: [
+      { word: "火曜日", reading: "かようび", romaji: "kayoubi", meaning_vi: "thứ ba" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "水",
+    readings: { kunyomi: ["みず"], onyomi: ["すい"] },
+    romaji: ["mizu", "sui"],
+    meaning_vi: "nước, thủy",
+    examples: [
+      { word: "水曜日", reading: "すいようび", romaji: "suiyoubi", meaning_vi: "thứ tư" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "木",
+    readings: { kunyomi: ["き"], onyomi: ["もく"] },
+    romaji: ["ki", "moku"],
+    meaning_vi: "cây, gỗ, mộc",
+    examples: [
+      { word: "木曜日", reading: "もくようび", romaji: "mokuyoubi", meaning_vi: "thứ năm" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "金",
+    readings: { kunyomi: ["きん"], onyomi: ["きん"] },
+    romaji: ["kin"],
+    meaning_vi: "vàng, kim",
+    examples: [
+      { word: "金曜日", reading: "きんようび", romaji: "kin'youbi", meaning_vi: "thứ sáu" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "土",
+    readings: { kunyomi: ["つち"], onyomi: ["ど"] },
+    romaji: ["tsuchi", "do"],
+    meaning_vi: "đất, thổ",
+    examples: [
+      { word: "土曜日", reading: "どようび", romaji: "doyoubi", meaning_vi: "thứ bảy" }
+    ],
+    level: "N5"
+  },
+
+  // Các từ khác
+  {
+    kanji: "語",
+    readings: { onyomi: ["ご"] },
+    romaji: ["go"],
+    meaning_vi: "ngôn ngữ, từ ngữ",
+    examples: [
+      { word: "語", reading: "ご", romaji: "go", meaning_vi: "ngôn ngữ" },
+      { word: "日本語", reading: "にほんご", romaji: "nihongo", meaning_vi: "tiếng Nhật" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "才",
+    readings: { onyomi: ["さい"] },
+    romaji: ["sai"],
+    meaning_vi: "tuổi, tài",
+    examples: [
+      { word: "才", reading: "さい", romaji: "sai", meaning_vi: "tuổi" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "留",
+    readings: { onyomi: ["りゅう"] },
+    romaji: ["ryuu"],
+    meaning_vi: "lưu, ở lại",
+    examples: [
+      { word: "留学生", reading: "りゅうがくせい", romaji: "ryuugakusei", meaning_vi: "du học sinh" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "休",
+    readings: { kunyomi: ["やす"], onyomi: ["きゅう"] },
+    romaji: ["yasu", "kyuu"],
+    meaning_vi: "nghỉ ngơi",
+    examples: [
+      { word: "休日", reading: "きゅうじつ", romaji: "kyuujitsu", meaning_vi: "ngày nghỉ" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "誕",
+    readings: { onyomi: ["たん"] },
+    romaji: ["tan"],
+    meaning_vi: "sinh",
+    examples: [
+      { word: "誕生日", reading: "たんじょうび", romaji: "tanjoubi", meaning_vi: "sinh nhật" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "生",
+    readings: { kunyomi: ["う", "い"], onyomi: ["せい", "しょう"] },
+    romaji: ["u", "i", "sei", "shou"],
+    meaning_vi: "sinh, sống",
+    examples: [
+      { word: "誕生日", reading: "たんじょうび", romaji: "tanjoubi", meaning_vi: "sinh nhật" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "円",
+    readings: { onyomi: ["えん"] },
+    romaji: ["en"],
+    meaning_vi: "yên (tiền tệ), tròn",
+    examples: [
+      { word: "百円", reading: "ひゃくえん", romaji: "hyakuen", meaning_vi: "một trăm yên" },
+      { word: "千円", reading: "せんえん", romaji: "sen'en", meaning_vi: "một nghìn yên" }
+    ],
+    level: "N5"
+  },
+  {
+    kanji: "曜",
+    readings: { onyomi: ["よう"] },
+    romaji: ["you"],
+    meaning_vi: "ngày trong tuần",
+    examples: [
+      { word: "月曜日", reading: "げつようび", romaji: "getsuyoubi", meaning_vi: "thứ hai" },
+      { word: "火曜日", reading: "かようび", romaji: "kayoubi", meaning_vi: "thứ ba" },
+      { word: "水曜日", reading: "すいようび", romaji: "suiyoubi", meaning_vi: "thứ tư" },
+      { word: "木曜日", reading: "もくようび", romaji: "mokuyoubi", meaning_vi: "thứ năm" },
+      { word: "金曜日", reading: "きんようび", romaji: "kin'youbi", meaning_vi: "thứ sáu" },
+      { word: "土曜日", reading: "どようび", romaji: "doyoubi", meaning_vi: "thứ bảy" },
+      { word: "日曜日", reading: "にちようび", romaji: "nichiyoubi", meaning_vi: "chủ nhật" }
+    ],
+    level: "N5"
+  }
+];
+
+// Tạo bảng tổ chức cho kanji
+export const organizedKanjiBasicNumbers: OrganizedTableData = {
+  title: 'Bảng Kanji Số Đếm Cơ Bản (基本数字)',
+  icon: 'fas fa-calculator',
+  columnHeaders: ['Kanji', 'Kunyomi', 'Onyomi', 'Nghĩa'],
+  rows: kanjiLibraryData.filter(k => ['一','二','三','四','五','六','七','八','九','十'].includes(k.kanji)).map(kanji => ({
+    rowHeader: kanji.kanji,
+    cells: [
+      { char: kanji.kanji, romaji: kanji.romaji.join('/'), type: 'kanji' as any },
+      { char: kanji.readings.kunyomi?.join('・') || '-', romaji: '', type: 'reading' as any },
+      { char: kanji.readings.onyomi?.join('・') || '-', romaji: '', type: 'reading' as any },
+      { char: kanji.meaning_vi, romaji: '', type: 'meaning' as any }
+    ]
+  }))
+};
+
+export const organizedKanjiTime: OrganizedTableData = {
+  title: 'Bảng Kanji Thời Gian & Ngày Tháng (時間・日付)',
+  icon: 'fas fa-clock',
+  columnHeaders: ['Kanji', 'Kunyomi', 'Onyomi', 'Nghĩa'],
+  rows: kanjiLibraryData.filter(k => ['日','月','時','分','年','曜'].includes(k.kanji)).map(kanji => ({
+    rowHeader: kanji.kanji,
+    cells: [
+      { char: kanji.kanji, romaji: kanji.romaji.join('/'), type: 'kanji' as any },
+      { char: kanji.readings.kunyomi?.join('・') || '-', romaji: '', type: 'reading' as any },
+      { char: kanji.readings.onyomi?.join('・') || '-', romaji: '', type: 'reading' as any },
+      { char: kanji.meaning_vi, romaji: '', type: 'meaning' as any }
+    ]
+  }))
+};
+
+export const organizedKanjiPeople: OrganizedTableData = {
+  title: 'Bảng Kanji Con Người & Giáo Dục (人・教育)',
+  icon: 'fas fa-user-graduate',
+  columnHeaders: ['Kanji', 'Kunyomi', 'Onyomi', 'Nghĩa'],
+  rows: kanjiLibraryData.filter(k => ['私','人','大','学','生','先','校'].includes(k.kanji)).map(kanji => ({
+    rowHeader: kanji.kanji,
+    cells: [
+      { char: kanji.kanji, romaji: kanji.romaji.join('/'), type: 'kanji' as any },
+      { char: kanji.readings.kunyomi?.join('・') || '-', romaji: '', type: 'reading' as any },
+      { char: kanji.readings.onyomi?.join('・') || '-', romaji: '', type: 'reading' as any },
+      { char: kanji.meaning_vi, romaji: '', type: 'meaning' as any }
+    ]
+  }))
+};
+
+// Export dữ liệu kanji
+export const KANJI_CHARACTERS_DATA: KanjiCharacter[] = kanjiLibraryData;
 
 const katakanaExtendedChars = JAPANESE_CHARACTERS_DATA.filter(c => c.type === 'katakana-extended');
 const extendedRows: OrganizedTableData['rows'] = [];

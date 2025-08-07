@@ -32,7 +32,7 @@ const Chatbot: React.FC = () => {
         Tuyệt đối không đề cập đến API KEY hay việc bạn là một mô hình ngôn ngữ lớn. Chỉ đóng vai Sensei AI.`;
         
         const newChat = ai.chats.create({
-            model: 'gemini-2.5-flash-preview-04-17',
+            model: 'gemini-2.5-flash',
             config: { systemInstruction },
             // Pass existing history from localStorage if available
             history: userData.chatHistory || [], 
